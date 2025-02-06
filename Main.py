@@ -4,9 +4,9 @@ from Summarizer import Summarizer
 from Transcriber import Transcriber
 
 # --- Configuration ---
-# MEETING_FILE = "resources/2024-07-17 Council Meeting.mp3"  # Meeting audio file
+MEETING_FILE = "resources/2024-07-17 Council Meeting.mp3"  # Meeting audio file
 # MEETING_FILE = "resources/ASP.mp4"
-MEETING_FILE = "resources/2024-08-20 Planning Meeting.mp3"
+# MEETING_FILE = "resources/2024-08-20 Planning Meeting.mp3"      # Big
 
 def run_full_meeting_processing():
     """Process a full meeting audio file, transcribe it, and summarize."""
@@ -15,11 +15,20 @@ def run_full_meeting_processing():
 
     print("Transcribing full meeting...")
     transcript = transcriber.transcribe_audio(MEETING_FILE)
+    print(transcript)
 
     print("Summarizing full meeting...")
     final_summary = summarizer.summarize(transcript)
 
     print("\nFinal Meeting Summary:\n", final_summary)
+
+    output_file = "final_meeting_summary.txt"
+    try:
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(final_summary)
+        print(f"\nThe final meeting report has been saved to: {output_file}")
+    except Exception as e:
+        print("Error writing the final meeting report to file:", e)
 
 
 def run_realtime_processing():

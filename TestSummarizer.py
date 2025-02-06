@@ -80,7 +80,7 @@ class TestSummarizer(unittest.TestCase):
         mock_post.return_value = mock_response
 
         result = self.summarizer._summarize_text("Test text", 100)
-        self.assertEqual(result, "Summarized text")     # Summarized text text text text into "Summarized text"
+        self.assertEqual(result, "Summarized text")     # Summarize: text text text text into "Summarized text"
 
 
     def test_reduce_history(self):
