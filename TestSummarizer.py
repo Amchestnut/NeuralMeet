@@ -10,6 +10,7 @@ class TestSummarizer(unittest.TestCase):
         self.summarizer = Summarizer()
         self.test_text = "This is a test sentence. " * 100  # Create some dummy text
 
+
     def test_count_tokens(self):
         """Test the _count_tokens method with different inputs."""
         test_cases = [
@@ -24,6 +25,7 @@ class TestSummarizer(unittest.TestCase):
                 result = self.summarizer._count_tokens(text)
                 self.assertEqual(result, expected)
 
+
     def test_split_text_into_chunks(self):
         """Test the _split_text_into_chunks method."""
         # Create a text that should split into exactly 2 chunks
@@ -36,6 +38,7 @@ class TestSummarizer(unittest.TestCase):
         for chunk in chunks:
             tokens = self.summarizer._count_tokens(chunk)
             self.assertLessEqual(tokens, max_tokens)  # Each chunk should be within limit
+
 
     @patch('requests.post')
     def test_process_chunk(self, mock_post):
@@ -67,6 +70,7 @@ class TestSummarizer(unittest.TestCase):
         self.assertEqual(chunk_summary, '')
         self.assertEqual(updated_context, context_summary)
 
+
     @patch('requests.post')
     def test_summarize_text(self, mock_post):
         """Test the _summarize_text method."""
@@ -77,6 +81,7 @@ class TestSummarizer(unittest.TestCase):
 
         result = self.summarizer._summarize_text("Test text", 100)
         self.assertEqual(result, "Summarized text")     # Summarized text text text text into "Summarized text"
+
 
     def test_reduce_history(self):
         """Test the _reduce_history method."""
@@ -91,6 +96,7 @@ class TestSummarizer(unittest.TestCase):
             self.summarizer.FINAL_SUMMARY_THRESHOLD
         )
 
+
     @patch('requests.post')
     def test_final_summary(self, mock_post):
         """Test the _final_summary method."""
@@ -102,6 +108,7 @@ class TestSummarizer(unittest.TestCase):
         history_list = ["Summary 1", "Summary 2"]
         result = self.summarizer._final_summary(history_list)
         self.assertEqual(result, "Final summary")
+
 
     @patch('requests.post')  # Add this to mock all API calls
     @patch.object(Summarizer, '_process_chunk')
@@ -128,6 +135,7 @@ class TestSummarizer(unittest.TestCase):
         self.assertTrue(mock_process.called)
         # Verifying we got the mocked final summary
         self.assertEqual(result, "Final summary text")
+
 
 if __name__ == '__main__':
     unittest.main()
