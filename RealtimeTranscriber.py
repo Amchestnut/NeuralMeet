@@ -40,6 +40,7 @@ class RealtimeTranscriber:
         if os.path.exists(self.output_file):
             os.remove(self.output_file)
 
+
     def _record_chunk(self, stream, chunk_size, rate):
         """
         Record self.chunk_sec seconds of audio (using multiple small reads) and return the raw frames.
@@ -56,6 +57,7 @@ class RealtimeTranscriber:
                 break
             frames.append(data)
         return b''.join(frames)
+
 
     def record_audio(self):
         """
@@ -80,6 +82,7 @@ class RealtimeTranscriber:
         stream.close()
         p.terminate()
         print("Recording thread stopped.")
+
 
     def process_audio(self):
         """
@@ -122,6 +125,7 @@ class RealtimeTranscriber:
             self.audio_queue.task_done()
         print("Processing thread stopped.")
 
+
     def _transcribe_chunk(self, frames, channels=1, rate=16000):
         """
         Write the recorded frames to a temporary WAV file and transcribe it using Whisper.
@@ -137,15 +141,17 @@ class RealtimeTranscriber:
         text = result["text"].strip()
         return text
 
+
     def _summarize_minute(self, minute_text):
         """
         Use the summarizer to process the minute's transcript and update context.
         """
-        chunk_summary, updated_context = self.summarizer._process_chunk(
+        chunk_summary, updated_context = self.summarizer.process_chunk(
             chunk_text=minute_text,
             context_summary=self._context_summary
         )
         return chunk_summary, updated_context
+
 
     def run(self):
         rec_thread = threading.Thread(target=self.record_audio, daemon=True)

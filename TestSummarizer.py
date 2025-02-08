@@ -55,7 +55,7 @@ class TestSummarizer(unittest.TestCase):
         chunk_text = "Test chunk"
         context_summary = "Previous context"
 
-        chunk_summary, updated_context = self.summarizer._process_chunk(
+        chunk_summary, updated_context = self.summarizer.process_chunk(
             chunk_text, context_summary
         )
 
@@ -64,7 +64,7 @@ class TestSummarizer(unittest.TestCase):
 
         # Test error handling
         mock_post.side_effect = Exception("API Error")
-        chunk_summary, updated_context = self.summarizer._process_chunk(
+        chunk_summary, updated_context = self.summarizer.process_chunk(
             chunk_text, context_summary
         )
         self.assertEqual(chunk_summary, '')

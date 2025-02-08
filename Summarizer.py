@@ -197,76 +197,8 @@ class Summarizer:
 
         return chunks
 
-    # old
-    # def _process_chunk(self, chunk_text, context_summary):
-    #     """
-    #     Sends the chunk and current context summary to the API.
-    #     Expects a JSON response with two keys: "chunk_part" and "updated_context".
-    #     """
-    #     template = self.chunk_prompt_templates.get(self.file_type, self.chunk_prompt_templates["meeting"])
-    #     prompt = template.format(
-    #         chunk_text=chunk_text,
-    #         context_summary=context_summary if context_summary else "No previous context."
-    #     )
-    #     payload = {
-    #         "model": "llama3.2:3b",
-    #         "prompt": prompt,
-    #         "stream": False
-    #     }
-    #
-    #     try:
-    #         response = requests.post(self.API_URL, json=payload)
-    #         response.raise_for_status()
-    #         data = response.json()
-    #         response_text = data.get('response', '')
-    #
-    #         # Debugging the response
-    #         print("\n=== Raw API Response ===")
-    #         print(f"Response text: {response_text}")
-    #
-    #         try:
-    #             response_text = response_text.strip()
-    #
-    #             print("\n=== Attempting to parse JSON ===")
-    #             print(f"Cleaned response text: {response_text}")
-    #
-    #             parsed_response = json.loads(response_text)
-    #
-    #             # Successfully parsed JSON
-    #             print("\n=== Parsed JSON ===")
-    #             print(f"Parsed response: {json.dumps(parsed_response, indent=2)}")
-    #
-    #             # # Now we expect two keys: "chunk_part" and "updated_context"
-    #             # chunk_part = parsed_response.get('chunk_part', '')
-    #             # updated_context = parsed_response.get('updated_context', '')
-    #
-    #             # print("\n=== Generated Summary ===")
-    #             # print(f"PROMPT:\n{prompt}")
-    #             # print(f"\nRESPONSE:\n{json.dumps(parsed_response, indent=2)}")
-    #             # print(f"\nCHUNK_PART:\n{chunk_part}")
-    #             # print(f"\nUPDATED_CONTEXT:\n{updated_context}")
-    #             # return chunk_part, updated_context
-    #             return parsed_response, parsed_response
-    #
-    #         except json.JSONDecodeError as e:
-    #             print(f"\n=== JSON Parse Error ===")
-    #             print(f"Error details: {str(e)}")
-    #             print(f"Failed to parse text: {response_text}")
-    #
-    #             with open("ERROR_OCCURED", "a", encoding="utf-8") as f:
-    #                 f.write(f"Yeah, some error occured: {response_text}\n")
-    #
-    #             chunk_part = response_text
-    #             updated_context = context_summary
-    #             return chunk_part, updated_context
-    #
-    #     except Exception as e:
-    #         print("Error processing chunk:", e)
-    #         with open("ERROR_OCCURED_2", "a", encoding="utf-8") as f:
-    #             f.write(f"Yeah, some error occured........\n")
-    #         return "", context_summary
 
-    def _process_chunk(self, chunk_text, context_summary):
+    def process_chunk(self, chunk_text, context_summary):
         """
         Single-pass approach:
         We instruct the model to return:
@@ -333,6 +265,7 @@ class Summarizer:
         except Exception as e:
             print(f"Error in _process_chunk: {e}")
             return "", context_summary
+
 
     def _summarize_text(self, text, target_length):
         """
@@ -440,7 +373,7 @@ class Summarizer:
 
         for i, chunk in enumerate(chunks):
             print(f"Processing chunk {i + 1} of {len(chunks)}...")
-            chunk_part, updated_context = self._process_chunk(chunk, context_summary)
+            chunk_part, updated_context = self.process_chunk(chunk, context_summary)
             print("Lets print the chunk part:", chunk_part)
             history_list.append(chunk_part)
             context_summary = updated_context
@@ -461,7 +394,7 @@ class Summarizer:
 
 if __name__ == "__main__":
 
-    something = "asfas asfsafs asf asf as fasf asfasfasf"
+    something = "I love baaaack asdasd ending computer science lalalalall"
     summarizer = Summarizer()
     res = summarizer._count_tokens(something)
     print(res)
