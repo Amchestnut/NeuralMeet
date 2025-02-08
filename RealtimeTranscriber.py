@@ -3,19 +3,17 @@ import wave
 import time
 import whisper
 import os
-from Summarizer import Summarizer
 import sys
-
+import threading
+from queue import Queue
+from Summarizer import Summarizer
 
 class RealtimeTranscriber:
     """
-    Continuously captures audio from a microphone in ~5-second chunks,
-    transcribes each chunk with Whisper, and every 1 minute:
-      - Summarizes that minute's text using Summarizer's chunk-level prompt
-      - Maintains a short rolling context summary
-      - Appends the newly summarized text to a TXT file
+    Continuously captures audio from the microphone and enqueues audio chunks.
+    A separate processing thread transcribes and summarizes the audio in real time,
+    so that recording is not blocked by processing delays.
     """
-
     def __init__(
         self,
         output_file="realtime_summary.txt",
@@ -24,179 +22,149 @@ class RealtimeTranscriber:
         summarize_interval_sec=60,
         file_type="meeting"
     ):
-        """
-        :param output_file: The TXT file path to append chunk summaries.
-        :param model_size: Whisper model size (e.g. 'base', 'small', etc.)
-        :param chunk_sec: Each chunk's duration in seconds before transcription
-        :param summarize_interval_sec: The interval (in seconds) at which we do a chunk summary
-        :param file_type: 'meeting', 'lecture', or 'call' for Summarizer context
-        """
-        self.is_recording = True
+        self.stop_event = threading.Event()
+        self.audio_queue = Queue()
         self.output_file = output_file
         self.chunk_sec = chunk_sec
         self.summarize_interval_sec = summarize_interval_sec
 
-        # Load the Whisper model once
         print(f"Loading Whisper model '{model_size}' ...")
         self.model = whisper.load_model(model_size)
-
-        # Create Summarizer
         self.summarizer = Summarizer(file_type=file_type)
 
-        # Internal buffers and counters
-        self._transcript_buffer = []            # stores partial transcripts for the current interval
-        self._time_accumulator = 0.0            # how many seconds since the last summarization
-        self._context_summary = file_type       # rolling context between each minute chunk
-        self._minute_count = 0                  # keeps track of how many 1-minute chunks have passed
+        self._transcript_buffer = []  # stores transcribed text for each chunk
+        self._time_accumulator = 0.0  # seconds accumulated since last summary
+        self._context_summary = file_type  # initial context is simply the file_type
+        self._minute_count = 0  # counts 1-minute intervals
 
         if os.path.exists(self.output_file):
             os.remove(self.output_file)
 
-
     def _record_chunk(self, stream, chunk_size, rate):
         """
-        Record self.chunk_sec seconds of audio from the stream.
-        Returns the raw frames.
+        Record self.chunk_sec seconds of audio (using multiple small reads) and return the raw frames.
         """
-        all_chunks = []
-        num_of_chunks = int(rate / chunk_size * self.chunk_sec)
-
-        for _ in range(num_of_chunks):
-            # We read 1024 frames from the microphone at once. Also if the mic buffer gets too full (overflow), we just drop some data
+        frames = []
+        num_of_reads = int(rate / chunk_size * self.chunk_sec)
+        for _ in range(num_of_reads):
+            if self.stop_event.is_set():
+                break
             try:
-                one_chunk = stream.read(chunk_size, exception_on_overflow=False)
-            except KeyboardInterrupt:       # We want to be able to stop the processing
-                print("\nStopping real-time transcription...")
-                raise
-            all_chunks.append(one_chunk)
+                data = stream.read(chunk_size, exception_on_overflow=False)
+            except Exception as e:
+                print("Recording error:", e)
+                break
+            frames.append(data)
+        return b''.join(frames)
 
-        # The data we want to return needs to be in BYTES, so 'b' tells python to join the binary chunks as binary data
-        return b''.join(all_chunks)
+    def record_audio(self):
+        """
+        Producer thread: continuously record audio and put each chunk on the queue.
+        """
+        chunk_size = 1024
+        rate = 16000
+        channels = 1
 
+        p = pyaudio.PyAudio()
+        stream = p.open(format=pyaudio.paInt16,
+                        channels=channels,
+                        rate=rate,
+                        input=True,
+                        frames_per_buffer=chunk_size)
+        print("Recording thread started.")
+        while not self.stop_event.is_set():
+            frames = self._record_chunk(stream, chunk_size, rate)
+            if frames:
+                self.audio_queue.put(frames)
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+        print("Recording thread stopped.")
+
+    def process_audio(self):
+        """
+        Consumer thread: continuously pull audio chunks from the queue, transcribe them,
+        and accumulate the transcription. When the accumulated time exceeds the summarization
+        interval, perform a summary and update the context.
+        """
+        channels = 1
+        rate = 16000
+        while not self.stop_event.is_set() or not self.audio_queue.empty():
+            try:
+                frames = self.audio_queue.get(timeout=1)
+            except Exception:
+                continue
+
+            text = self._transcribe_chunk(frames, channels, rate)
+            print(f"[Partial text]: {text}")
+            self._transcript_buffer.append(text)
+            self._time_accumulator += self.chunk_sec
+
+            # If we've accumulated enough time, process a summary.
+            if self._time_accumulator >= self.summarize_interval_sec:
+                self._minute_count += 1
+                minute_text = "\n".join(self._transcript_buffer)
+                chunk_part, updated_context = self._summarize_minute(minute_text)
+
+                print(f"\n--- Minute {self._minute_count} Summary ---")
+                print(chunk_part)
+                print("--- End Summary ---\n")
+
+                with open(self.output_file, "a", encoding="utf-8") as f:
+                    f.write(f"\n## Minute {self._minute_count}\n")
+                    f.write(f"**Context before chunk**: {self._context_summary}\n\n")
+                    f.write(f"**New Summary**:\n{chunk_part}\n\n")
+
+                self._context_summary = updated_context
+                self._transcript_buffer = []
+                self._time_accumulator = 0.0
+
+            self.audio_queue.task_done()
+        print("Processing thread stopped.")
 
     def _transcribe_chunk(self, frames, channels=1, rate=16000):
         """
-        Write PCM frames to a small WAV file, then transcribe with Whisper.
-        Returns recognized text for that chunk.
+        Write the recorded frames to a temporary WAV file and transcribe it using Whisper.
         """
         temp_wav = "temp_chunk.wav"
-
         wf = wave.open(temp_wav, 'wb')
         wf.setnchannels(channels)
         wf.setsampwidth(2)  # pyaudio.paInt16 = 2 bytes
         wf.setframerate(rate)
         wf.writeframes(frames)
         wf.close()
-
         result = self.model.transcribe(temp_wav)
         text = result["text"].strip()
-
         return text
-
 
     def _summarize_minute(self, minute_text):
         """
-        Use Summarizer's chunk-level approach to summarize the minute_text, carrying a rolling context_summary forward.
-        Summarizer has an internal method `_process_chunk` that returns (chunk_summary, updated_context)
-        We pass in our `minute_text` plus the current `_context_summary`.
+        Use the summarizer to process the minute's transcript and update context.
         """
-
         chunk_summary, updated_context = self.summarizer._process_chunk(
             chunk_text=minute_text,
             context_summary=self._context_summary
         )
         return chunk_summary, updated_context
 
-
     def run(self):
-        """
-        Main loop:
-          - Capture audio in 5s chunks
-          - Transcribe each chunk
-          - Every 1 min, summarize that minute's transcript with rolling context
-          - Append the summarized chunk to a TXT file
-        """
-        chunk_size = 1024   # 1024 frames per 1 chunk
-        rate = 16000        # 16000 frames per second (higher rate = higher quality = bigger size)      (cd quality is usually around 45000)
-        channels = 1
+        rec_thread = threading.Thread(target=self.record_audio, daemon=True)
+        proc_thread = threading.Thread(target=self.process_audio, daemon=True)
+        rec_thread.start()
+        proc_thread.start()
 
-        # So in 1 second we need: 16000/1024 ≈ 15.625 chunks
-        # 1 chunk = 5 sec, For 5 seconds we need: 15.625 * 5 = 78.125 chunks (rounded to 78)
-
-        p = pyaudio.PyAudio()
-        stream = p.open(format=pyaudio.paInt16,         # 16-bit audio (CD quality)
-                        channels=channels,              # 1: Mono audio
-                        rate=rate,                      # 16000 samples per sec
-                        input=True,                     # We want to RECORD, not PLAT
-                        frames_per_buffer=chunk_size)   # Process 1024 frame at a time
-
-        print("=== Real-time Transcription & Summaries ===")
-        print("Capturing microphone audio, press Ctrl+C to stop.\n")
-
+        print("Press Ctrl+C to stop.")
         try:
-            while self.is_recording:
-                # 1) Capture ~5 seconds of audio
-                frames = self._record_chunk(stream, chunk_size, rate)
-
-                # 2) Convert speech to text
-                partial_text = self._transcribe_chunk(frames, channels, rate)
-                print(f"[Partial text]: {partial_text}")
-
-                # 3) Accumulate partial_text, adding to our 1-minute buffer (future queue)
-                self._transcript_buffer.append(partial_text)
-                self._time_accumulator += self.chunk_sec
-
-                # 4) Check if we've hit 1 minute
-                if self._time_accumulator >= self.summarize_interval_sec:
-                    self._minute_count += 1
-
-                    # Combine all partial transcripts for this past minute
-                    minute_text = "\n".join(self._transcript_buffer)
-
-                    # Summarize the minute text (rolling context)
-                    chunk_part, updated_context = self._summarize_minute(minute_text)
-
-                    # Print or log the chunk text part
-                    print(f"\n--- Minute {self._minute_count} Chunk text part summary: ---")
-                    print(chunk_part)
-                    print("--- End Summary ---\n")
-
-                    # Append summary to output file
-                    with open(self.output_file, "a", encoding="utf-8") as f:
-                        f.write(f"\n## Minute {self._minute_count}\n")
-                        f.write(f"**Context before chunk**: {self._context_summary}\n\n")
-                        f.write(f"**New Summary**:\n{chunk_part}\n\n")
-
-                    # Update rolling context, reset buffers
-                    self._context_summary = updated_context
-                    self._transcript_buffer = []
-                    self._time_accumulator = 0.0
-
+            while not self.stop_event.is_set():
+                time.sleep(0.5)
         except KeyboardInterrupt:
-            self.is_recording = False
-        except Exception as e:
-            print(f"Error: {e}")
-            self.is_recording = False
-        finally:
-            self.is_recording = False
-            # Cleanup audio
-            stream.stop_stream()
-            stream.close()
-            p.terminate()
+            print("KeyboardInterrupt received. Stopping...")
+            self.stop_event.set()
 
-            # Optionally handle leftover partial text
-            if self._transcript_buffer:
-                leftover_text = "\n".join(self._transcript_buffer)
-                # We won't do a final summary for now, probably never:
-                # chunk_summary, updated_context = self._summarize_minute(leftover_text)
-
-                print("\nThere were some leftover transcript lines not included in a 1-minute summary:")
-                print(leftover_text)
-
-            print(f"All done. Summaries appended to: {self.output_file}")
-
-        return
-
+        rec_thread.join()
+        proc_thread.join()
+        print(f"All done. Summaries appended to: {self.output_file}")
+        sys.exit(0)
 
 if __name__ == "__main__":
     rt = RealtimeTranscriber(
@@ -206,11 +174,4 @@ if __name__ == "__main__":
         summarize_interval_sec=60,
         file_type="meeting"
     )
-
-    # Check mic audio
-    # p = pyaudio.PyAudio()
-    # for i in range(p.get_device_count()):
-    #     devinfo = p.get_device_info_by_index(i)
-    #     print(i, devinfo.get('name'), devinfo.get('maxInputChannels'))
-
     rt.run()

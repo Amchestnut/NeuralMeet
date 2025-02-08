@@ -1,7 +1,6 @@
 import re
 import time
 import requests
-import sys
 import tiktoken
 import json
 
@@ -38,62 +37,73 @@ class Summarizer:
                 "Meeting Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. Provide a clear overview of what was discussed\n"
-                "2. Focus on:\n"
+                "1. Write `CHUNK_PART`:\n"
+                "2. Provide a clear overview of what was discussed\n"
+                "3. Focus on:\n"
                 "   - Key decisions and their context\n"
                 "   - Important discussion points\n"
                 "   - Action items and next steps\n"
                 "   - Notable concerns or issues\n"
-                "3. Structure using Markdown:\n"
+                "4. Structure using Markdown:\n"
                 "   - Use '## Topic' for main sections\n"
                 "   - Use '* ' for key points\n"
                 "   - Use '**bold**' for decisions\n"
                 "   - Add '\\n' between sections\n"
-                "4. Be clear but not overly detailed\n"
+                "5. Be clear but not overly detailed\n"
                 "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
+
+                "6. Write a delimiter line `---DELIMITER---`\n"
+                "7. Write `UPDATED_CONTEXT`:\n"
+                "8. Write an updated context of the conversation.\n"
             ),
             "lecture": (
                 "System: You are a precise assistant that captures important details and presents them in a structured format.\n\n"
                 "Lecture Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. Provide a clear overview of what was taught\n"
-                "2. Focus on:\n"
+                "1. Write `CHUNK_PART`:\n"
+                "2. Provide a clear overview of what was taught\n"
+                "3. Focus on:\n"
                 "   - Main concepts explained\n"
                 "   - Any examples given\n"
                 "   - Important definitions\n"
                 "   - Core relationships between concepts\n"
-                "3. Structure using Markdown:\n"
+                "4. Structure using Markdown:\n"
                 "   - Use '## Topic' for main concepts\n"
                 "   - Use '* ' for key points\n"
                 "   - Use '**bold**' for important terms\n"
                 "   - Add '\\n' between sections\n"
-                "4. Be clear but not overly detailed\n"
+                "5. Be clear but not overly detailed\n"
                 "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
+                
+                "6. Write a delimiter line `---DELIMITER---`\n"
+                "7. Write `UPDATED_CONTEXT`:\n"
+                "8. Write an updated context of the conversation.\n"
             ),
+
             "call": (
                 "System: You are a precise assistant that captures important details and presents them in a structured format.\n\n"
                 "Phone Call Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. Provide a clear overview of the conversation\n"
-                "2. Focus on:\n"
+                "1. Write `CHUNK_PART`:\n"
+                "2. Provide a clear overview of the conversation\n"
+                "3. Focus on:\n"
                 "   - Main topics discussed\n"
                 "   - Important agreements or decisions\n"
                 "   - Key requests or requirements\n"
                 "   - Follow-up items\n"
-                "3. Structure using Markdown:\n"
+                "4. Structure using Markdown:\n"
                 "   - Use '## Overview' for the main section\n"
                 "   - Use '* ' for key points\n"
                 "   - Use '**bold**' for decisions/agreements\n"
                 "   - Add '\\n' between sections\n"
-                "4. Be clear but not overly detailed\n"
+                "5. Be clear but not overly detailed\n"
                 "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
                 
-                "You must output exactly two sections in **plain text** (no JSON):\n"
-                "1) Provide a clear detailed overview of the conversation, labeled `CHUNK_PART:`\n"
-                "2) A special delimiter line `---DELIMITER---`\n"
-                "3) The updated context of the conversation, labeled `UPDATED_CONTEXT:`"
+                "6. Write a delimiter line `---DELIMITER---`\n"
+                "7. Write `UPDATED_CONTEXT`:\n"
+                "8. Write an updated context of the conversation.\n"
             )
         }
 
@@ -296,14 +306,10 @@ class Summarizer:
             # UPDATED_CONTEXT:
             # (some text)
             #
-            # We'll do a simple regex search
+            # I will write a simple regex search
             # Groups:
             # (1) chunk part
             # (2) updated context
-
-            # We'll look for:
-            # ^CHUNK_PART:\s*(.*?)---DELIMITER---\s*UPDATED_CONTEXT:\s*(.*)$
-            # with DOTALL so it captures newlines
 
             pattern = re.compile(
                 r"CHUNK_PART:\s*(.*?)\s*---DELIMITER---\s*UPDATED_CONTEXT:\s*(.*)$",
@@ -313,10 +319,15 @@ class Summarizer:
             if match:
                 chunk_part = match.group(1).strip()
                 updated_context = match.group(2).strip()
+
+                with open("CHUNK_PART.txt", "w") as file:
+                    file.write(chunk_part)
+                with open("UPDATED_CONTEXT.txt", "w") as file:
+                    file.write(updated_context)
+
                 return chunk_part, updated_context
             else:
-                # If there's no match, fallback to entire text as chunk_part
-                # and keep the same context
+                # If there's no match, fallback to entire text as chunk_part and keep the same context
                 return raw_text, context_summary
 
         except Exception as e:
@@ -430,7 +441,7 @@ class Summarizer:
         for i, chunk in enumerate(chunks):
             print(f"Processing chunk {i + 1} of {len(chunks)}...")
             chunk_part, updated_context = self._process_chunk(chunk, context_summary)
-            print("AJDE DA PRINTAMO CHUNK SUMMARY:", chunk_part)
+            print("Lets print the chunk part:", chunk_part)
             history_list.append(chunk_part)
             context_summary = updated_context
             time.sleep(0.5)  # pause to avoid rate limits if necessary
