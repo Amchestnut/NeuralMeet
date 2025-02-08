@@ -1,16 +1,14 @@
-import time
-# import Transcriber
 from Summarizer import Summarizer
 from Transcriber import Transcriber
 from RealtimeTranscriber import RealtimeTranscriber
 
-# --- Configuration ---
+
 # MEDIA_FILE = "resources/2024-07-17 Council Meeting.mp3"       # Shorter meeting audio file
 # MEDIA_FILE = "resources/2024-08-20 Planning Meeting.mp3"      # Big
 
 # MEDIA_FILE = "resources/ASP.mp4"                              # Lecture
 
-MEDIA_FILE = "resources/phone_call_example.mp3"                 # Phone call
+MEDIA_FILE = "resources/phone_call_example.mp3"               # Phone call
 
 
 def run_audio_file_processing(media_file, file_type):

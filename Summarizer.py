@@ -1,3 +1,4 @@
+import re
 import time
 import requests
 import sys
@@ -21,6 +22,7 @@ class Summarizer:
         We will adjust our prompts based on this
         """
         self.file_type = file_type.lower().strip()
+        self.initial_context = None
 
         if tiktoken:
             try:
@@ -32,101 +34,68 @@ class Summarizer:
 
         self.chunk_prompt_templates = {
             "meeting": (
-                "System: You are a precise assistant that captures ALL details and returns them in JSON format with exactly two keys: 'chunk_part' and 'updated_context'.\n\n"
+                "System: You are a precise assistant that captures important details and presents them in a structured format.\n\n"
                 "Meeting Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. PRESERVE AND EXPAND on every single piece of information. Do not summarize or condense.\n"
-                "2. Include and elaborate on:\n"
-                "   - EVERY decision made (what was decided, why, implications)\n"
-                "   - ALL discussion points (even if they seem minor)\n"
-                "   - EVERY action item (who, what, when, how)\n"
-                "   - ALL numbers, data points, and metrics mentioned\n"
-                "   - ANY concerns or issues raised\n"
-                "   - EVERY person mentioned and their role/contribution\n"
-                "   - ALL deadlines, dates, and time-sensitive information\n"
-                "3. Structure the output using Markdown:\n"
+                "1. Provide a clear overview of what was discussed\n"
+                "2. Focus on:\n"
+                "   - Key decisions and their context\n"
+                "   - Important discussion points\n"
+                "   - Action items and next steps\n"
+                "   - Notable concerns or issues\n"
+                "3. Structure using Markdown:\n"
                 "   - Use '## Topic' for main sections\n"
-                "   - Use '### Subtopic' for subsections\n"
-                "   - Use '* ' for main bullet points\n"
-                "   - Use '  - ' for sub-bullet points\n"
-                "   - Use '**bold**' for important points\n"
-                "   - Use '*italic*' for emphasis\n"
-                "   - Add '\\n' for proper line spacing\n"
-                "4. Organize content into clear sections with headers\n"
-                "5. Use bullet points for lists of items\n"
-                "6. Aim for maximum detail - use all 500 tokens\n"
-                "7. Return in this exact JSON format:\n"
-                "{{\n"
-                "  \"chunk_part\": \"[DETAILED 500-token structured Markdown text preserving all information]\",\n"
-                "  \"updated_context\": \"[300-token ongoing narrative of key themes and developments]\"\n"
-                "}}\n"
+                "   - Use '* ' for key points\n"
+                "   - Use '**bold**' for decisions\n"
+                "   - Add '\\n' between sections\n"
+                "4. Be clear but not overly detailed\n"
+                "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
             ),
             "lecture": (
-                "System: You are a precise assistant that captures ALL details and returns them in JSON format with exactly two keys: 'chunk_part' and 'updated_context'.\n\n"
+                "System: You are a precise assistant that captures important details and presents them in a structured format.\n\n"
                 "Lecture Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. PRESERVE AND EXPAND on every piece of information. Do not summarize or condense.\n"
-                "2. Include and elaborate on:\n"
-                "   - EVERY concept introduced (with full explanation)\n"
-                "   - ALL examples given (with complete context)\n"
-                "   - EVERY definition provided\n"
-                "   - ALL relationships between concepts\n"
-                "   - ANY questions asked and answers given\n"
-                "   - EVERY analogy or comparison used\n"
-                "   - ALL technical terms and their explanations\n"
-                "3. Structure the output using Markdown:\n"
+                "1. Provide a clear overview of what was taught\n"
+                "2. Focus on:\n"
+                "   - Main concepts explained\n"
+                "   - Any examples given\n"
+                "   - Important definitions\n"
+                "   - Core relationships between concepts\n"
+                "3. Structure using Markdown:\n"
                 "   - Use '## Topic' for main concepts\n"
-                "   - Use '### Subtopic' for related points\n"
-                "   - Use '* ' for main examples/points\n"
-                "   - Use '  - ' for detailed explanations\n"
-                "   - Use '**bold**' for key terms\n"
-                "   - Use '*italic*' for definitions\n"
-                "   - Add '\\n' for proper line spacing\n"
-                "4. Organize content into logical sections\n"
-                "5. Use bullet points for examples and explanations\n"
-                "6. Aim for maximum detail - use all 500 tokens\n"
-                "7. Return in this exact JSON format:\n"
-                "{{\n"
-                "  \"chunk_part\": \"[DETAILED 500-token structured Markdown text preserving all information]\",\n"
-                "  \"updated_context\": \"[300-token ongoing narrative of key concepts and their development]\"\n"
-                "}}\n"
+                "   - Use '* ' for key points\n"
+                "   - Use '**bold**' for important terms\n"
+                "   - Add '\\n' between sections\n"
+                "4. Be clear but not overly detailed\n"
+                "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
             ),
             "call": (
-                "System: You are a precise assistant that captures ALL details and returns them in JSON format with exactly two keys: 'chunk_part' and 'updated_context'.\n\n"
+                "System: You are a precise assistant that captures important details and presents them in a structured format.\n\n"
                 "Phone Call Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. PRESERVE AND EXPAND on every single piece of information. Do not summarize or condense.\n"
-                "2. Include and elaborate on:\n"
-                "   - EVERY topic discussed (with full context)\n"
-                "   - ALL agreements or commitments made\n"
-                "   - EVERY request or requirement mentioned\n"
-                "   - ALL follow-up items and their details\n"
-                "   - ANY concerns or issues raised\n"
-                "   - EVERY person mentioned and their role\n"
-                "   - ALL numbers, dates, and specific details\n"
-                "   - EVERY business term or reference\n"
-                "3. Structure the output using Markdown:\n"
-                "   - Use '## Call Overview' for the main section\n"
-                "   - Use '### Topic' for each major discussion point\n"
-                "   - Use '* ' for important statements\n"
-                "   - Use '  - ' for details and follow-ups\n"
-                "   - Use '**bold**' for commitments/decisions\n"
-                "   - Use '*italic*' for important details\n"
-                "   - Add '\\n' for proper line spacing\n"
-                "4. Organize content chronologically or by topic\n"
-                "5. Use bullet points for action items and details\n"
-                "6. Aim for maximum detail - use all 500 tokens\n"
-                "7. Return output in this exact JSON format dictionary, without any additional text:\n"
-                "{{\n"
-                "  \"chunk_part\": \"[Write structured Markdown text preserving all important information discussed]\",\n"
-                "  \"updated_context\": \"[just some 300-token ongoing narrative of the call's progression]\"\n"
-                "}}\n"
+                "1. Provide a clear overview of the conversation\n"
+                "2. Focus on:\n"
+                "   - Main topics discussed\n"
+                "   - Important agreements or decisions\n"
+                "   - Key requests or requirements\n"
+                "   - Follow-up items\n"
+                "3. Structure using Markdown:\n"
+                "   - Use '## Overview' for the main section\n"
+                "   - Use '* ' for key points\n"
+                "   - Use '**bold**' for decisions/agreements\n"
+                "   - Add '\\n' between sections\n"
+                "4. Be clear but not overly detailed\n"
+                "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
+                
+                "You must output exactly two sections in **plain text** (no JSON):\n"
+                "1) Provide a clear detailed overview of the conversation, labeled `CHUNK_PART:`\n"
+                "2) A special delimiter line `---DELIMITER---`\n"
+                "3) The updated context of the conversation, labeled `UPDATED_CONTEXT:`"
             )
         }
-
 
         self.final_prompt_templates = {
             "meeting": (
@@ -218,16 +187,89 @@ class Summarizer:
 
         return chunks
 
+    # old
+    # def _process_chunk(self, chunk_text, context_summary):
+    #     """
+    #     Sends the chunk and current context summary to the API.
+    #     Expects a JSON response with two keys: "chunk_part" and "updated_context".
+    #     """
+    #     template = self.chunk_prompt_templates.get(self.file_type, self.chunk_prompt_templates["meeting"])
+    #     prompt = template.format(
+    #         chunk_text=chunk_text,
+    #         context_summary=context_summary if context_summary else "No previous context."
+    #     )
+    #     payload = {
+    #         "model": "llama3.2:3b",
+    #         "prompt": prompt,
+    #         "stream": False
+    #     }
+    #
+    #     try:
+    #         response = requests.post(self.API_URL, json=payload)
+    #         response.raise_for_status()
+    #         data = response.json()
+    #         response_text = data.get('response', '')
+    #
+    #         # Debugging the response
+    #         print("\n=== Raw API Response ===")
+    #         print(f"Response text: {response_text}")
+    #
+    #         try:
+    #             response_text = response_text.strip()
+    #
+    #             print("\n=== Attempting to parse JSON ===")
+    #             print(f"Cleaned response text: {response_text}")
+    #
+    #             parsed_response = json.loads(response_text)
+    #
+    #             # Successfully parsed JSON
+    #             print("\n=== Parsed JSON ===")
+    #             print(f"Parsed response: {json.dumps(parsed_response, indent=2)}")
+    #
+    #             # # Now we expect two keys: "chunk_part" and "updated_context"
+    #             # chunk_part = parsed_response.get('chunk_part', '')
+    #             # updated_context = parsed_response.get('updated_context', '')
+    #
+    #             # print("\n=== Generated Summary ===")
+    #             # print(f"PROMPT:\n{prompt}")
+    #             # print(f"\nRESPONSE:\n{json.dumps(parsed_response, indent=2)}")
+    #             # print(f"\nCHUNK_PART:\n{chunk_part}")
+    #             # print(f"\nUPDATED_CONTEXT:\n{updated_context}")
+    #             # return chunk_part, updated_context
+    #             return parsed_response, parsed_response
+    #
+    #         except json.JSONDecodeError as e:
+    #             print(f"\n=== JSON Parse Error ===")
+    #             print(f"Error details: {str(e)}")
+    #             print(f"Failed to parse text: {response_text}")
+    #
+    #             with open("ERROR_OCCURED", "a", encoding="utf-8") as f:
+    #                 f.write(f"Yeah, some error occured: {response_text}\n")
+    #
+    #             chunk_part = response_text
+    #             updated_context = context_summary
+    #             return chunk_part, updated_context
+    #
+    #     except Exception as e:
+    #         print("Error processing chunk:", e)
+    #         with open("ERROR_OCCURED_2", "a", encoding="utf-8") as f:
+    #             f.write(f"Yeah, some error occured........\n")
+    #         return "", context_summary
+
     def _process_chunk(self, chunk_text, context_summary):
         """
-        Sends the chunk and current context summary to the API.
-        Expects a JSON response with two keys: "chunk_part" and "updated_context".
+        Single-pass approach:
+        We instruct the model to return:
+          CHUNK_PART: ...
+          ---DELIMITER---
+          UPDATED_CONTEXT: ...
+        Then parse it.
         """
-        template = self.chunk_prompt_templates.get(self.file_type, self.chunk_prompt_templates["meeting"])
-        prompt = template.format(
-            chunk_text=chunk_text,
-            context_summary=context_summary if context_summary else "No previous context."
-        )
+        # Fill in the prompt
+        prompt = self.chunk_prompt_templates[self.file_type]
+        prompt = prompt.replace("{chunk_text}", chunk_text)
+        prompt = prompt.replace("{context_summary}", context_summary)
+
         payload = {
             "model": "llama3.2:3b",
             "prompt": prompt,
@@ -235,57 +277,51 @@ class Summarizer:
         }
 
         try:
-            response = requests.post(self.API_URL, json=payload)
-            response.raise_for_status()
-            data = response.json()
-            response_text = data.get('response', '')
+            resp = requests.post(self.API_URL, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+            raw_text = data.get("response", "").strip()
 
-            # Debugging the response
-            print("\n=== Raw API Response ===")
-            print(f"Response text: {response_text}")
+            print("\n=== Raw LLM response (DELIMITER approach) ===")
+            print(raw_text)
+            print("=============================================")
 
-            try:
-                response_text = response_text.strip()
+            # Now parse out the two sections
+            # We expect something like:
+            # CHUNK_PART:
+            # (some text)
+            #
+            # ---DELIMITER---
+            #
+            # UPDATED_CONTEXT:
+            # (some text)
+            #
+            # We'll do a simple regex search
+            # Groups:
+            # (1) chunk part
+            # (2) updated context
 
-                print("\n=== Attempting to parse JSON ===")
-                print(f"Cleaned response text: {response_text}")
+            # We'll look for:
+            # ^CHUNK_PART:\s*(.*?)---DELIMITER---\s*UPDATED_CONTEXT:\s*(.*)$
+            # with DOTALL so it captures newlines
 
-                parsed_response = json.loads(response_text)
-
-                # Successfully parsed JSON
-                print("\n=== Parsed JSON ===")
-                print(f"Parsed response: {json.dumps(parsed_response, indent=2)}")
-
-                # Now we expect two keys: "chunk_part" and "updated_context"
-                chunk_part = parsed_response.get('chunk_part', '')
-                updated_context = parsed_response.get('updated_context', '')
-
-                print("\n=== Generated Summary ===")
-                print(f"PROMPT:\n{prompt}")
-                print(f"\nRESPONSE:\n{json.dumps(parsed_response, indent=2)}")
-                print(f"\nCHUNK_PART:\n{chunk_part}")
-                print(f"\nUPDATED_CONTEXT:\n{updated_context}")
-
+            pattern = re.compile(
+                r"CHUNK_PART:\s*(.*?)\s*---DELIMITER---\s*UPDATED_CONTEXT:\s*(.*)$",
+                re.DOTALL
+            )
+            match = pattern.search(raw_text)
+            if match:
+                chunk_part = match.group(1).strip()
+                updated_context = match.group(2).strip()
                 return chunk_part, updated_context
-
-            except json.JSONDecodeError as e:
-                print(f"\n=== JSON Parse Error ===")
-                print(f"Error details: {str(e)}")
-                print(f"Failed to parse text: {response_text}")
-
-                with open("ERROR_OCCURED", "a", encoding="utf-8") as f:
-                    f.write(f"Yeah, some error occured: {response_text}\n")
-
-                chunk_part = response_text
-                updated_context = context_summary
-                return chunk_part, updated_context
+            else:
+                # If there's no match, fallback to entire text as chunk_part
+                # and keep the same context
+                return raw_text, context_summary
 
         except Exception as e:
-            print("Error processing chunk:", e)
-            with open("ERROR_OCCURED 2", "a", encoding="utf-8") as f:
-                f.write(f"Yeah, some error occured........\n")
+            print(f"Error in _process_chunk: {e}")
             return "", context_summary
-
 
     def _summarize_text(self, text, target_length):
         """

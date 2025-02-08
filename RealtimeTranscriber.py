@@ -44,10 +44,10 @@ class RealtimeTranscriber:
         self.summarizer = Summarizer(file_type=file_type)
 
         # Internal buffers and counters
-        self._transcript_buffer = []    # stores partial transcripts for the current interval
-        self._time_accumulator = 0.0    # how many seconds since the last summarization
-        self._context_summary = ""      # rolling context between each minute chunk
-        self._minute_count = 0          # keeps track of how many 1-minute chunks have passed
+        self._transcript_buffer = []            # stores partial transcripts for the current interval
+        self._time_accumulator = 0.0            # how many seconds since the last summarization
+        self._context_summary = file_type       # rolling context between each minute chunk
+        self._minute_count = 0                  # keeps track of how many 1-minute chunks have passed
 
         if os.path.exists(self.output_file):
             os.remove(self.output_file)
@@ -103,7 +103,7 @@ class RealtimeTranscriber:
 
         chunk_summary, updated_context = self.summarizer._process_chunk(
             chunk_text=minute_text,
-            context_summary=self._context_summary if self._context_summary else "No previous context."
+            context_summary=self._context_summary
         )
         return chunk_summary, updated_context
 
@@ -194,6 +194,8 @@ class RealtimeTranscriber:
                 print(leftover_text)
 
             print(f"All done. Summaries appended to: {self.output_file}")
+
+        return
 
 
 if __name__ == "__main__":
