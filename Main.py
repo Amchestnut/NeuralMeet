@@ -2,6 +2,7 @@ import time
 # import Transcriber
 from Summarizer import Summarizer
 from Transcriber import Transcriber
+from RealtimeTranscriber import RealtimeTranscriber
 
 # --- Configuration ---
 # MEDIA_FILE = "resources/2024-07-17 Council Meeting.mp3"       # Shorter meeting audio file
@@ -41,21 +42,20 @@ def run_audio_file_processing(media_file, file_type):
         print("Error writing the final meeting report to file:", e)
 
 
-def run_realtime_processing():
-    """Simulate real-time transcript processing for 5 minutes."""
-    summarizer = Summarizer()
-    meeting_duration_seconds = 5 * 60  # Simulated real-time meeting
-    meeting_end_time = time.time() + meeting_duration_seconds
+def run_realtime_processing(chosen_file_type):
+    """
+    Process audio in realtime and summarize.
+    """
 
-    while time.time() < meeting_end_time:
-        # Simulating real-time incoming transcript text
-        new_text = "This is a simulated transcript text. Discussing the new policy changes."
-        summarizer.update_chunk(new_text)
-        time.sleep(5)  # Simulated delay
-
-    # Process any remaining transcript text
-    final_summary = summarizer.get_final_summary()
-    print("\nFinal Meeting Summary:\n", final_summary)
+    # Create and run the transcriber
+    rt = RealtimeTranscriber(
+        output_file="realtime_summary.txt",
+        model_size="base",          # or small, medium...
+        chunk_sec=5,                # capture audio in 5-second chunks
+        summarize_interval_sec=60,  # summarize every 60 seconds
+        file_type=chosen_file_type
+    )
+    rt.run()
 
 
 if __name__ == "__main__":
@@ -64,31 +64,28 @@ if __name__ == "__main__":
     print("2. Run real-time transcript processing")
     mode_choice = input("Enter 1 or 2: ").strip()
 
+    # Prompt user for the file type
+    print("What type of file is this?")
+    print("1) Meeting")
+    print("2) Lecture")
+    print("3) Phone Call")
+    file_type_choice = input("Enter 1, 2, or 3: ").strip()
+
+    # Map user choice to a string
+    if file_type_choice == "1":
+        chosen_file_type = "meeting"
+    elif file_type_choice == "2":
+        chosen_file_type = "lecture"
+    elif file_type_choice == "3":
+        chosen_file_type = "call"
+    else:
+        print("Invalid file type choice. Exiting.")
+        exit()
+
+
     if mode_choice == "1":
-        # Prompt user for the file type
-        print("What type of file is this?")
-        print("1) Meeting")
-        print("2) Lecture")
-        print("3) Phone Call")
-        file_type_choice = input("Enter 1, 2, or 3: ").strip()
-
-        # Map user choice to a string
-        if file_type_choice == "1":
-            chosen_file_type = "meeting"
-        elif file_type_choice == "2":
-            chosen_file_type = "lecture"
-        elif file_type_choice == "3":
-            chosen_file_type = "call"
-        else:
-            print("Invalid file type choice. Exiting.")
-            exit()
-
-        # You can also ask the user to enter the path to the file if you want:
-        # media_file = input("Enter the path to the audio/video file: ").strip()
-        # For now, we'll just use the default MEDIA_FILE
         run_audio_file_processing(MEDIA_FILE, chosen_file_type)
-
     elif mode_choice == "2":
-        run_realtime_processing()
+        run_realtime_processing(chosen_file_type)
     else:
         print("Invalid choice. Exiting.")
