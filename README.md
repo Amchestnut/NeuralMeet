@@ -3,8 +3,8 @@
 Neural Meet AI is an innovative, AI-powered application designed to transform spoken content into structured, actionable insights. Leveraging state-of-the-art models like OpenAI’s Whisper along with advanced NLP, this tool efficiently transcribes and summarizes audio from meetings, lectures, and phone calls. Whether you’re a professional looking to streamline meeting notes, an educator capturing lecture highlights, or a developer integrating audio analysis into your workflow, Neural Meet AI simplifies the process with real-time processing and intelligent summarization.
 
 <p align="center"> 
-  <img src="images/image_1.png" alt="Audio File Example" width="1000" />
-  <img src="images/image_2.png" alt="Real-time Example" width="1000" /> 
+  <img src="images/image_1.png" alt="Audio File Example" width="500" />
+  <img src="images/image_2.png" alt="Real-time Example" width="500" /> 
 </p>
 
 ---
