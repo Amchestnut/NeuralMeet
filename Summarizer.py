@@ -213,7 +213,7 @@ class Summarizer:
         prompt = prompt.replace("{context_summary}", context_summary)
 
         payload = {
-            "model": "llama3.2:3b",
+            "model": "llama3.1:latest",
             "prompt": prompt,
             "stream": False
         }
@@ -276,7 +276,7 @@ class Summarizer:
             "Provide only the summary text."
         )
         payload = {
-            "model": "llama3.2:3b",
+            "model": "llama3.1:latest",
             "prompt": prompt,
             "stream": False
         }
@@ -340,7 +340,7 @@ class Summarizer:
         print(prompt)
 
         payload = {
-            "model": "llama3.2:3b",
+            "model": "llama3.1:latest",
             "prompt": prompt,
             "stream": False
         }
@@ -377,7 +377,7 @@ class Summarizer:
             print("Lets print the chunk part:", chunk_part)
             history_list.append(chunk_part)
             context_summary = updated_context
-            time.sleep(0.5)  # pause to avoid rate limits if necessary
+            # time.sleep(0.5)  # pause to avoid rate limits if necessary
 
         combined_history_tokens = self._count_tokens(" ".join(history_list))
         print(f"Combined history token count: {combined_history_tokens}")

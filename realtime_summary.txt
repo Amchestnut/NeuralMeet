@@ -1,0 +1,94 @@
+
+## Minute 1
+**Context before chunk**: call
+
+**New Summary**:
+**CHUNK_PART**
+
+The phone call transcript starts with an introduction from the British Council, but the audio is not clear.
+
+**Overview**
+### Summary of the Conversation
+
+*   The caller is from Red Band and is calling about their latest order.
+*   The conversation revolves around the invoice and payment for the order.
+*   The caller requests a favor by asking to extend the payment terms due to cash flow problems.
+*   A decision is made to extend the payment term to 60 days.
+
+### Main Topics Discussed
+
+*   Order delivery confirmation
+*   Invoice and payment
+*   Cash flow problems
+*   Request for payment term extension
+
+### Important Agreements or Decisions
+
+*   **Extension of payment terms to 60 days**
+
+### Key Requests or Requirements
+
+*   Extension of payment terms
+*   Resolution of cash flow problems
+
+### Follow-up Items
+
+*   Underneath the decision to extend the payment terms, it is unclear what will happen if the under... is not completed.
+
+---DELIMITER---
+
+**UPDATED_CONTEXT**
+
+The caller has requested an extension of the payment terms due to cash flow problems. The decision was made to extend the payment term to 60 days.
+
+
+## Minute 2
+**Context before chunk**: call
+
+**New Summary**:
+**CHUNK_PART**
+
+We've got the regulations at our end and also have to manage our
+Oh, cashflow. I promise that this won't become the... Okay.
+
+Inceede, cows, koya è oddértnost ot izparaté.
+
+to cash for problems in decision was made to extend the payment room to sister.
+
+**Zdésę**! N
+
+The decision was made.
+to jest informata, jak applaudowa, design w wspólnie stronie visu.
+
+Da, povane reklistmo, si buni blavr, blavr, blavr, blavr.
+
+All right. All right.
+
+Nyet, complaint. Pod miejsce around 10 raz…
+да контакси отрел, азъжто лошад слаг модел. Privéshe muya tëžko da na premarğal na teksti.
+
+**Č**active ovo do toto i dođardtje hoš
+
+---
+
+## Overview
+### Main Topics Discussed
+* Regulations and cashflow management
+
+### Important Agreements or Decisions
+* **Extension of payment room to sister**
+
+### Key Requests or Requirements
+* No specific requests mentioned in the conversation, except for a complaint about something.
+
+### Follow-up Items
+None specified
+
+---DELIMITER---
+
+**UPDATED_CONTEXT**
+
+It seems that the conversation has ended with some decisions and agreements. The main topic discussed was regulations and cashflow management. A decision was made to extend the payment room to a sister company or organization (no further details provided). There were also some complaints mentioned, but no specific requests for action were made.
+
+The conversation appears to have been interrupted or disconnected, as there is no clear follow-up information available.
+

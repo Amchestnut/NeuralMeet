@@ -2,14 +2,12 @@ from Summarizer import Summarizer
 from Transcriber import Transcriber
 from RealtimeTranscriber import RealtimeTranscriber
 
-
 # MEDIA_FILE = "resources/2024-07-17 Council Meeting.mp3"       # Shorter meeting audio file
 # MEDIA_FILE = "resources/2024-08-20 Planning Meeting.mp3"      # Big
-
 # MEDIA_FILE = "resources/ASP.mp4"                              # Lecture
-
 MEDIA_FILE = "resources/phone_call_example.mp3"               # Phone call
-
+# MEDIA_FILE = "resources/machine_learning_lecture.mp4"
+# MEDIA_FILE = "resources/ui.mp4"
 
 def run_audio_file_processing(media_file, file_type):
     """
@@ -24,6 +22,8 @@ def run_audio_file_processing(media_file, file_type):
     print(f"Transcribing the {file_type} audio/video file...")
     transcript = transcriber.transcribe_audio(media_file)
     print(transcript)
+    with open("transcript.txt", "w", encoding="utf-8") as f:
+        f.write(transcript)
 
     print(f"Summarizing the {file_type}...")
     final_summary = summarizer.summarize(transcript)
