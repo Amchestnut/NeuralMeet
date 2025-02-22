@@ -39,11 +39,12 @@ def main():
     elif mode_choice == "2":
         # Real-time processing
         rt_processor = RealtimeProcessor(
-            summarize_interval_sec=60,
+            summarize_interval_sec=30,
             chunk_sec=5,
             model_size="medium",
             file_type=chosen_file_type,
-            output_file="realtime_summary.txt"
+            # output_file="realtime_summary.txt"
+            output_file="/mnt/c/Users/Windows11/Desktop/A/AquamarineML/NeuralMeet/Realtime_processing.md"
         )
         rt_processor.start()
     else:

@@ -1,3 +1,42 @@
+## Minute 1
+**Context before chunk**: call
+
+**New Summary**:
+**CHUNK_PART**
+
+## Overview
+
+The conversation involves a delivery and payment inquiry.
+
+* The customer confirms that everything arrived okay with the order.
+* They are calling to discuss the invoice and payment terms, requesting a favor which they find difficult to ask about.
+
+## Main Topics Discussed
+* Delivery confirmation
+* Invoice and payment terms
+
+## Important Agreements or Decisions
+* **Everything is fine with the order.**
+
+## Key Requests or Requirements
+* The customer needs assistance with something related to the invoice and payment terms, but does not specify what.
+* They mention that this request is "a little... difficult".
+
+## Follow-up Items
+* Further clarification on the customer's request is needed.
+
+---DELIMITER---
+
+**UPDATED_CONTEXT**
+The conversation now involves a customer seeking help with an unspecified aspect of their invoice or payment terms. The assistant should investigate and provide assistance accordingly.
+
+
+## Minute 2
+**Context before chunk**: call
+
+**New Summary**:
+
+
 
 ## Minute 1
 **Context before chunk**: call
@@ -5,39 +44,130 @@
 **New Summary**:
 **CHUNK_PART**
 
-The phone call transcript starts with an introduction from the British Council, but the audio is not clear.
+---
 
-**Overview**
-### Summary of the Conversation
+## Overview
 
-*   The caller is from Red Band and is calling about their latest order.
-*   The conversation revolves around the invoice and payment for the order.
-*   The caller requests a favor by asking to extend the payment terms due to cash flow problems.
-*   A decision is made to extend the payment term to 60 days.
+The phone call transcript discusses placing new orders for an important customer.
 
 ### Main Topics Discussed
-
-*   Order delivery confirmation
-*   Invoice and payment
-*   Cash flow problems
-*   Request for payment term extension
+* Placing a new order with the same size as last time
+* Requesting pay on delivery for the new order
 
 ### Important Agreements or Decisions
-
-*   **Extension of payment terms to 60 days**
+* **New order to be placed with the same size as last time**
+* **Pay on delivery for the new order**
 
 ### Key Requests or Requirements
-
-*   Extension of payment terms
-*   Resolution of cash flow problems
+* Place new order with specific customer requirements
+* Pay on delivery for the new order
 
 ### Follow-up Items
+* Solving cash flow problem after new order is delivered
 
-*   Underneath the decision to extend the payment terms, it is unclear what will happen if the under... is not completed.
+---
+
+**DELIMITER---**
+
+**UPDATED_CONTEXT**
+
+The context of the conversation has been updated to reflect a new order being placed for an important customer, with specific requirements and payment terms. The assistant should note that pay on delivery will solve the cash flow problem after the new order is delivered.
+
+
+## Minute 1
+**Context before chunk**: call
+
+**New Summary**:
+**CHUNK_PART**
+
+## Overview
+The phone call was a brief discussion regarding a payment terms extension.
+
+* The speaker is willing to help with the extension, without any issues or problems.
+* A new order will be emailed to the caller, who needs to keep an eye out for it.
+* There's no mention of specific details about the payment terms or the new order.
 
 ---DELIMITER---
 
 **UPDATED_CONTEXT**
 
-The caller has requested an extension of the payment terms due to cash flow problems. The decision was made to extend the payment term to 60 days.
+The conversation now includes a confirmation that a new order with extended payment terms will be sent via email. The caller is expected to receive this email and review its contents, but there are no further instructions or follow-up actions mentioned in the transcript.
+
+
+## Minute 1
+**Context before chunk**: call
+
+**New Summary**:
+**CHUNK_PART**
+
+## Overview
+The phone call discussed delivery confirmation and payment terms for an order.
+
+* The speaker confirmed that everything arrived okay at their end.
+* A favor was requested regarding the invoice and payment terms.
+* The caller asked about a specific item related to a "little... dish".
+
+## Key Points
+
+* Delivery confirmation: **everything's fine with the order**
+* Payment terms: request for a favor regarding the invoice
+* Item mention: "little... dish" (no further details provided)
+
+## Important Agreements or Decisions
+
+* None explicitly mentioned in this chunk of conversation.
+
+## Key Requests or Requirements
+
+* Favor related to invoice and payment terms requested by the caller.
+* No other specific requests or requirements mentioned in this section.
+
+## Follow-up Items
+
+* The favor related to the invoice and payment terms requires clarification.
+
+---
+
+**UPDATED_CONTEXT**
+
+The conversation has taken a turn towards discussing payment terms and an item mentioned as a "little... dish". The speaker confirmed that everything arrived okay, but the caller is seeking assistance with invoicing. The lack of clarity on this specific item's details may require further inquiry to provide accurate support or resolution.
+
+
+## Minute 1
+**Context before chunk**: call
+
+**New Summary**:
+Overview
+The conversation revolves around managing cash flow and placing new orders.
+
+* Main topics discussed:
+	+ Managing cash flow, including receiving payments from customers.
+	+ Placing a new order for an important customer who pays on delivery.
+* Important agreements or decisions:
+	+ The speaker promises that the current situation won't become the norm.
+	+ **They agree to manage their own cash flow and accept new orders.**
+* Key requests or requirements:
+	+ The speaker needs to place another order of the same size as the previous one.
+* Follow-up items:
+	+ None mentioned in the provided transcript chunk.
+
+
+## Minute 2
+**Context before chunk**: The conversation involves a discussion about managing cash flow, placing new orders, and making agreements with customers. The speaker is concerned about their current situation and promises that it won't become a recurring issue. They need to place another order for an important customer who pays on delivery.
+
+**New Summary**:
+Overview
+
+The conversation revolves around managing cash flow and placing new orders to address customer needs.
+
+* Main topics discussed:
+	+ Managing cash flow
+	+ Placing new orders for customers
+	+ Ensuring timely delivery for a specific customer
+* Important agreements or decisions:
+	+ **The speaker promises that the current situation will be resolved after delivering the new order.**
+* Key requests or requirements:
+	+ The speaker needs to place another order for an important customer who pays on delivery.
+* Follow-up items:
+	+ The speaker needs to verify the details with Andrea.
 

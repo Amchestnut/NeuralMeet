@@ -12,7 +12,7 @@ class PromptFactory:
                 "Meeting Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. Write `CHUNK_PART`:\n"
+                "1. Write exactly `CHUNK_PART`\n"
                 "2. Provide a clear overview of what was discussed\n"
                 "3. Focus on:\n"
                 "   - Key decisions and their context\n"
@@ -26,8 +26,8 @@ class PromptFactory:
                 "   - Add '\\n' between sections\n"
                 "5. Be clear but not overly detailed\n"
                 "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
-                "6. Write a delimiter line `---DELIMITER---`\n"
-                "7. Write `UPDATED_CONTEXT`:\n"
+                "6. Write a delimiter line with exactly this text: `---`\n"
+                "7. Write exactly `UPDATED_CONTEXT`\n"
                 "8. Write an updated context of the conversation.\n"
             ),
             "lecture": (
@@ -35,7 +35,7 @@ class PromptFactory:
                 "Lecture Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. Write `CHUNK_PART`:\n"
+                "1. Write exactly `CHUNK_PART`\n"
                 "2. Provide a clear overview of what was taught\n"
                 "3. Focus on:\n"
                 "   - Main concepts explained\n"
@@ -49,8 +49,8 @@ class PromptFactory:
                 "   - Add '\\n' between sections\n"
                 "5. Be clear but not overly detailed\n"
                 "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
-                "6. Write a delimiter line `---DELIMITER---`\n"
-                "7. Write `UPDATED_CONTEXT`:\n"
+                "6. Write a delimiter line with exactly this text: `---`\n"
+                "7. Write exactly `UPDATED_CONTEXT`\n"
                 "8. Write an updated context of the conversation.\n"
             ),
             "call": (
@@ -58,7 +58,7 @@ class PromptFactory:
                 "Phone Call Transcript Chunk:\n{chunk_text}\n\n"
                 "Current Context Summary:\n{context_summary}\n\n"
                 "Instructions:\n"
-                "1. Write `CHUNK_PART`:\n"
+                "1. Write exactly `CHUNK_PART`\n"
                 "2. Provide a clear overview of the conversation\n"
                 "3. Focus on:\n"
                 "   - Main topics discussed\n"
@@ -72,8 +72,8 @@ class PromptFactory:
                 "   - Add '\\n' between sections\n"
                 "5. Be clear but not overly detailed\n"
                 "You can use up to 500 tokens to write a detailed structured overview with markdowns.\n"
-                "6. Write a delimiter line `---DELIMITER---`\n"
-                "7. Write `UPDATED_CONTEXT`:\n"
+                "6. Write a delimiter line with exactly this text: `---`\n"
+                "7. Write exactly `UPDATED_CONTEXT`\n"
                 "8. Write an updated context of the conversation.\n"
             )
         }

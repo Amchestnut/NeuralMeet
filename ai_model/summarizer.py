@@ -93,11 +93,15 @@ class Summarizer:
         if not raw_text:
             return "", context_summary
 
+        with open("raw_text.txt", "w", encoding="utf-8") as f:
+            f.write(raw_text)
+
         # Parsing the two sections using a delimiter approach
         pattern = re.compile(
-            r"CHUNK_PART:\s*(.*?)\s*---DELIMITER---\s*UPDATED_CONTEXT:\s*(.*)$",
+            r"[\*#\s]*CHUNK_PART[\*#\s]*\s*(.*?)\s*---\s*[\*#\s]*UPDATED_CONTEXT[\*#\s]*\s*(.*)$",
             re.DOTALL
         )
+
         match = pattern.search(raw_text)
         if match:
             chunk_part = match.group(1).strip()
