@@ -1,75 +1,27 @@
-from Summarizer import Summarizer
-from Transcriber import Transcriber
-from RealtimeTranscriber import RealtimeTranscriber
+import os
+from processing.audio_file_processor import AudioFileProcessor
+from processing.realtime_processor import RealtimeProcessor
 
-# MEDIA_FILE = "resources/2024-07-17 Council Meeting.mp3"       # Shorter meeting audio file
+
+MEDIA_FILE = "resources/2024-07-17 Council Meeting.mp3"       # Shorter meeting audio file
 # MEDIA_FILE = "resources/2024-08-20 Planning Meeting.mp3"      # Big
 # MEDIA_FILE = "resources/ASP.mp4"                              # Lecture
-MEDIA_FILE = "resources/phone_call_example.mp3"               # Phone call
+# MEDIA_FILE = "resources/phone_call_example.mp3"               # Phone call
 # MEDIA_FILE = "resources/machine_learning_lecture.mp4"
 # MEDIA_FILE = "resources/ui.mp4"
 
-def run_audio_file_processing(media_file, file_type):
-    """
-    Process a full audio/video file, transcribe it, and summarize.
-    file_type can be 'meeting', 'lecture', or 'call' (phone call).
-    """
-    transcriber = Transcriber()
-
-    # Pass file_type to Summarizer so it knows which prompts to use
-    summarizer = Summarizer(file_type=file_type)
-
-    print(f"Transcribing the {file_type} audio/video file...")
-    transcript = transcriber.transcribe_audio(media_file)
-    print(transcript)
-    with open("transcript.txt", "w", encoding="utf-8") as f:
-        f.write(transcript)
-
-    print(f"Summarizing the {file_type}...")
-    final_summary = summarizer.summarize(transcript)
-
-    print(f"\nFinal {file_type.capitalize()} Summary:\n", final_summary)
-
-    # --- Write the final summary to a file ---
-    output_file = f"output/final_{file_type}_summary.txt"
-    try:
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write(final_summary)
-        print(f"\nThe final {file_type} report has been saved to: {output_file}")
-    except Exception as e:
-        print("Error writing the final meeting report to file:", e)
-
-
-def run_realtime_processing(chosen_file_type):
-    """
-    Process audio in realtime and summarize.
-    """
-
-    # Create and run the transcriber
-    rt = RealtimeTranscriber(
-        output_file="realtime_summary.txt",
-        model_size="base",          # or small, medium...
-        chunk_sec=5,                # capture audio in 5-second chunks
-        summarize_interval_sec=60,  # summarize every 60 seconds
-        file_type=chosen_file_type
-    )
-    rt.run()
-
-
-if __name__ == "__main__":
+def main():
     print("Choose processing mode:")
     print("1. Process a full audio/video file")
     print("2. Run real-time transcript processing")
     mode_choice = input("Enter 1 or 2: ").strip()
 
-    # Prompt user for the file type
     print("What type of file is this?")
     print("1) Meeting")
     print("2) Lecture")
     print("3) Phone Call")
     file_type_choice = input("Enter 1, 2, or 3: ").strip()
 
-    # Map user choice to a string
     if file_type_choice == "1":
         chosen_file_type = "meeting"
     elif file_type_choice == "2":
@@ -78,12 +30,29 @@ if __name__ == "__main__":
         chosen_file_type = "call"
     else:
         print("Invalid file type choice. Exiting.")
-        exit()
-
+        return
 
     if mode_choice == "1":
-        run_audio_file_processing(MEDIA_FILE, chosen_file_type)
+        # Audio file processing
+        processor = AudioFileProcessor(model_size="medium")
+        processor.process_file(MEDIA_FILE, chosen_file_type)
     elif mode_choice == "2":
-        run_realtime_processing(chosen_file_type)
+        # Real-time processing
+        rt_processor = RealtimeProcessor(
+            summarize_interval_sec=60,
+            chunk_sec=5,
+            model_size="medium",
+            file_type=chosen_file_type,
+            output_file="realtime_summary.txt"
+        )
+        rt_processor.start()
     else:
         print("Invalid choice. Exiting.")
+
+
+if __name__ == "__main__":
+    # Ensuring 'output' folder exists
+    if not os.path.exists("output"):
+        os.makedirs("output")
+
+    main()
