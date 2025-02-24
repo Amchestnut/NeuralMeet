@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message AudioChunk {
+  bytes audio_data = 1;
+}
+
+message STTResponse {
+  string transcription = 1;
+}
+
+service AudioStream {
+  rpc StreamAudio (stream AudioChunk) returns (stream STTResponse);
+}
