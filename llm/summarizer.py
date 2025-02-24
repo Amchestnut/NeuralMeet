@@ -167,7 +167,7 @@ class Summarizer:
 
     def final_summary(self, history_list, file_type: str) -> str:
         """
-        Creates a final, comprehensive report from the combined chunk summaries in `history_list`.
+        If the user wants, he can create a final, comprehensive report from the combined chunk summaries in `history_list`/
 
         :param history_list: List of all chunk_part texts.
         :param file_type: 'meeting', 'lecture', or 'call'.

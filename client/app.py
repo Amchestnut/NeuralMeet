@@ -53,9 +53,12 @@ def main():
         # Microphone real-time
         mic_proc = MicrophoneProcessor(
             stt_address=stt_address,
-            chunk_sec=5,
+            chunk_sec=10,
             sample_rate=16000,
-            channels=1
+            channels=1,
+            llm_endpoint="http://localhost:8001/process_text",
+            file_type=chosen_file_type,
+            output_file="C:/Users/Windows11/Desktop/A/AquamarineML/NeuralMeet/Microphone_realtime_processing.md"
         )
         try:
             mic_proc.start()  # blocks until user Ctrl+C or smt
@@ -68,8 +71,11 @@ def main():
         # System audio real-time
         sys_proc = SystemAudioProcessor(
             stt_address=stt_address,
-            chunk_sec=5,
-            sample_rate=16000
+            chunk_sec=10,
+            sample_rate=16000,
+            llm_endpoint="http://localhost:8001/process_text",
+            file_type=chosen_file_type,
+            output_file="C:/Users/Windows11/Desktop/A/AquamarineML/NeuralMeet/System_audio_realtime_processing.md"
         )
         try:
             sys_proc.start()  # blocks

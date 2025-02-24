@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import uvicorn
-import asyncio
 from llm.llm_processing import process_text
 
 app = FastAPI()
