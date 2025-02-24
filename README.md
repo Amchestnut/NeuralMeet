@@ -1,6 +1,11 @@
 # Neural Meet AI: Real-Time Audio Transcription & Summarization Tool
 
-Neural Meet AI is an innovative, AI-powered application designed to transform spoken content into structured, actionable insights. Leveraging state-of-the-art models like OpenAI’s Whisper along with advanced NLP, this tool efficiently transcribes and summarizes audio from meetings, lectures, and phone calls. Whether you’re a professional looking to streamline meeting notes, an educator capturing lecture highlights, or a developer integrating audio analysis into your workflow, Neural Meet AI simplifies the process with real-time processing and intelligent summarization.
+Sometimes you just find yourself **not paying attention** on meetings or during a lecture? *Neural meet is there for you!*   
+
+Neural meet is an innovative AI powered application designed for **summarizing** your *Meetings*, *Lectures*, or even *phone calls*.    
+Neural meet is designed to work with **existing audio files** and for **real-time audio** (integrates with your *microphone* or *system sound*).    
+It is completely LOCAL, combining whisper and local transformer models, it runs entirely on your GPU, you just need a GPU with 4gb, preferrably 8-16gb.    
+
 
 <p align="center"> 
   <img src="images_for_readme/image_1.png" alt="Audio File Example" width="400" height="415"/>
